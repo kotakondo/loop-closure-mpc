@@ -3,7 +3,7 @@ try:
     from casadi import cos, sin
 except:
     from numpy import cos, sin
-from tomma.dynamics import Dynamics
+from lcmpc.dynamics import Dynamics
 
 """
 CONTROL_LIN_VEL_ANG_VEL:

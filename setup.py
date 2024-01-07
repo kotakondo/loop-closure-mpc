@@ -1,14 +1,14 @@
 from setuptools import setup
 
 setup(
-    name='tomma',
+    name='lcmpc',
     version='0.1.0',    
-    description='Trajectory Optimization for Multiple Model-based Agents',
-    url='https://github.com/mbpeterson70/casadi_trajectory_optimization',
-    author='Mason Peterson',
-    author_email='masonbp@mit.edu',
+    description='Loop Closure MPC with CasADi',
+    url='https://github.com/kotakondo/loop-closure-mpc',
+    author='Kota Kondo',
+    author_email='kkondo@mit.edu',
     license='MIT',
-    packages=['tomma'],
+    packages=['lcmpc'],
     install_requires=['numpy',
                         'matplotlib',
                         'ipython',

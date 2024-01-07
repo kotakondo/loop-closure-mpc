@@ -57,6 +57,7 @@ class MultiAgentOptimization():
 
         self._add_dynamic_constraints()
         self._add_state_constraint(0, x0)
+        self._add_state_constraint(-1, xf)
         self.add_x_bounds(x_bounds)
         self.add_u_bounds(u_bounds)
         self._add_obstacle_constraints()
