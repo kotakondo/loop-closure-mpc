@@ -158,26 +158,6 @@ class LoopClosureAwareMPC():
         # self._add_obstacle_constraints()
         # self._add_multi_agent_collision_constraints()
 
-    def setup_min_time_opt(self, x0, xf, tf_guess=10.0, x_bounds=None, u_bounds=None):
-        '''
-        x0: nx1 initial state
-        xf: nx1 goal state
-        x_bounds and u_bounds override self.x_bounds and self.u_bounds, but uses
-        self.x_bounds and self.u_bounds if no x_bounds or u_bounds is set.
-        '''
-        self._general_opt_setup()
-        self.tf = self.opti.variable()
-        self.opti.set_initial(self.tf, tf_guess)
-        self.opti.minimize(self.tf)
-        self.dt = self.tf / self.N
-
-        self._add_dynamic_constraints()
-        self._add_state_constraint(0, x0)
-        self._add_state_constraint(-1, xf)
-        self.add_x_bounds(x_bounds if x_bounds is not None else self.x_bounds)
-        self.add_u_bounds(u_bounds if u_bounds is not None else self.u_bounds)
-        # self._add_multi_agent_collision_constraints()
-
     def add_x_bounds(self, x_bounds):
         ''' 
         x_bounds: n x 2 vector of x min and max (can be infinity)
@@ -280,29 +260,28 @@ class LoopClosureAwareMPC():
         """ *** option 1: sum up the map cost at each state (doesn't work because of casadi related error) *** """
         # this didn't work due to casadi related error
         # casadi does not support indexing np arrays with casadi variables so we have to convert the map to a casadi parameter
-        # map_cost = self.opti.parameter(self.occupancy_map.map_cost.shape[0], self.occupancy_map.map_cost.shape[1])
-        # self.opti.set_value(map_cost, self.occupancy_map.map_cost)
+        # costmap = self.opti.parameter(self.occupancy_map.costmap.shape[0], self.occupancy_map.costmap.shape[1])
+        # self.opti.set_value(costmap, self.occupancy_map.costmap)
         # for j in range(self.x[m].shape[1]):
         #     # print("careful with this map indexing")
-        #     collision_cost += map_cost[casadi.floor(self.x[m][0,j]), casadi.floor(self.x[m][1,j])]
+        #     collision_cost += costmap[casadi.floor(self.x[m][0,j]), casadi.floor(self.x[m][1,j])]
 
         """ *** option 2: occupancy map cost weighted by inverse squared distance (don't forget to add 0.01 to avoid division by zero) *** """
         # this works but very slow
         # (TODO) we can pass just local map to this function instead of the whole occupancy map 
-        # for i in range(self.occupancy_map.map_cost.shape[0]):
-        #     for j in range(self.occupancy_map.map_cost.shape[1]):
+        # for i in range(self.occupancy_map.costmap.shape[0]):
+        #     for j in range(self.occupancy_map.costmap.shape[1]):
         #         for k in range(self.x[m].shape[1]):
         #             # print("careful with this map indexing")
-        #             collision_cost += self.occupancy_map.map_cost[i,j] * ( 1 / ((self.x[m][0,k] - i)**2 + (self.x[m][1,k] - j)**2+0.01) )
+        #             collision_cost += self.occupancy_map.costmap[i,j] * ( 1 / ((self.x[m][0,k] - i)**2 + (self.x[m][1,k] - j)**2+0.01) )
 
         """ *** option 3: create obstacle constraints using occupancy map *** """
-
         # this works but only accounts for obstacles that have more cost than the threshold
         # create obstacle constraints using occupancy map
         self.obstacles = []
-        for i in range(self.occupancy_map.map_cost.shape[0]):
-            for j in range(self.occupancy_map.map_cost.shape[1]):
-                if self.occupancy_map.map_cost[i,j] > 0.9: 
+        for i in range(self.occupancy_map.costmap.shape[0]):
+            for j in range(self.occupancy_map.costmap.shape[1]):
+                if self.occupancy_map.costmap[i,j] > 0.9: 
                     self.obstacles.append({'position': np.array([i, j]), 'radius': 2.0})
 
         for ob in self.obstacles:

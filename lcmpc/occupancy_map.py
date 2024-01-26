@@ -23,15 +23,24 @@ class OccupancyMap():
         self.OCCUPIED_CELL = 1 # Occupied cell
         self.create_map()
 
+    def update_map(self, msg):
+
+        """
+        Receive costmap from /move_base/global_costmap/costmap topic and update the map.
+        """
+
+        self.resolution = msg.info.resolution
+        self.costmap = np.array(msg.data).reshape(msg.info.height, msg.info.width)
+
     def create_map(self):
         # Create a map of all empty cells
-        self.map_cost = np.zeros(self.map_size_y * self.map_size_x).reshape(self.map_size_y, self.map_size_x)
+        self.costmap = np.zeros(self.map_size_y * self.map_size_x).reshape(self.map_size_y, self.map_size_x)
         # Obstacles
-        for i in range(self.num_obstacles):
-            self.map_cost[10, i] = self.OCCUPIED_CELL
-            self.map_cost[11, i] = self.OCCUPIED_CELL
-            self.map_cost[12, i] = self.OCCUPIED_CELL
-            self.map_cost[13, i] = self.OCCUPIED_CELL
+        # for i in range(self.num_obstacles):
+        #     self.costmap[10, i] = self.OCCUPIED_CELL
+        #     self.costmap[11, i] = self.OCCUPIED_CELL
+        #     self.costmap[12, i] = self.OCCUPIED_CELL
+        #     self.costmap[13, i] = self.OCCUPIED_CELL
 
     def plot_grid(self, x_plot=None):
 
@@ -43,7 +52,7 @@ class OccupancyMap():
         # Plot it out
         fig, ax = plt.subplots()
         # map
-        ax.imshow(self.map_cost, cmap=cmap, norm=norm)
+        ax.imshow(self.costmap, cmap=cmap, norm=norm)
         ax.grid(which='major', axis='both', linestyle='-', color='k', linewidth=1)
         ax.set_xticks(np.arange(0.5, self.map_size_y, 1))
         ax.set_yticks(np.arange(0.5, self.map_size_x, 1))
